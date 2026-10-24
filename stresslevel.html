@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.png">
+  <title>Stress level graph</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    main {
+      width: min(1500px, 100%);
+      box-sizing: border-box;
+      padding: 24px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    #chart,
+    #month-chart {
+      display: block;
+      width: 100%;
+      max-width: 850px;
+      height: auto;
+    }
+
+    #reading,
+    #point-details {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .live-layout {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+    }
+
+    .live-graph {
+      width: min(850px, 100%);
+      flex: 0 1 850px;
+    }
+
+    #stress-alert {
+      color: #c00000;
+      font-family: Arial, sans-serif;
+      font-size: clamp(44px, 6vw, 90px);
+      font-weight: bold;
+      line-height: 0.9;
+      text-align: center;
+      animation: stress-flash 0.65s steps(2, start) infinite;
+    }
+
+    #stress-alert p {
+      margin: 12px 0 0;
+      font-family: serif;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .stress-arrow {
+      font-size: 1.4em;
+      line-height: 0.8;
+    }
+
+    .narrow-arrow {
+      display: none;
+    }
+
+    @keyframes stress-flash {
+      50% {
+        opacity: 0.15;
+      }
+    }
+
+    @media (max-width: 1050px) {
+      .live-layout {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      #stress-alert {
+        align-self: center;
+      }
+
+      .wide-arrow {
+        display: none;
+      }
+
+      .narrow-arrow {
+        display: inline;
+      }
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 14px;
+      }
+
+      .live-layout {
+        gap: 24px;
+      }
+
+      .live-graph {
+        width: 100%;
+        flex-basis: auto;
+      }
+
+      #stress-alert {
+        font-size: clamp(42px, 16vw, 72px);
+      }
+
+      #stress-alert p {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Stress level graph</h1>
+    <p>Current level: <strong id="reading">--%</strong></p>
+    <div class="live-layout">
+      <div class="live-graph">
+        <canvas id="chart" width="850" height="430" aria-label="A live graph of stress levels over time">
+          Your browser does not support the graph.
+        </canvas>
+        <p id="point-details">Move over the live graph to see a point's exact date, time, and level.</p>
+      </div>
+
+      <aside id="stress-alert" role="alert" aria-live="assertive" hidden>
+        STRESSED!
+        <div class="stress-arrow" aria-hidden="true">
+          <span class="wide-arrow">←</span><span class="narrow-arrow">↑</span>
+        </div>
+        <p>Stress level is over 80%</p>
+      </aside>
+    </div>
+
+    <h2>Stress level over this month</h2>
+    <p id="month-reading">Loading this month's stress data...</p>
+    <canvas id="month-chart" width="850" height="380" aria-label="A graph of daily stress levels across the current month">
+      Your browser does not support the graph.
+    </canvas>
+
+    <p><a href="index.html">Back to the main page</a></p>
+  </main>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("chart");
+      const context = canvas.getContext("2d");
+      const reading = document.getElementById("reading");
+      const pointDetails = document.getElementById("point-details");
+      const stressAlert = document.getElementById("stress-alert");
+      const monthCanvas = document.getElementById("month-chart");
+      const monthContext = monthCanvas.getContext("2d");
+      const monthReading = document.getElementById("month-reading");
+      const samples = [];
+      const sampleEveryMs = 1000;
+      const visibleSeconds = 300;
+      const startedAt = Date.now();
+      let currentLevel = 9;
+      let targetLevel = 10;
+      let secondsToNextChange = 7;
+      let changeKind = "settled";
+      let monthKey = "";
+      let monthlySamples = [];
+
+      // The graph starts with some history, then keeps using the same changing
+      // reading so it does not follow the same loop each time it is opened.
+      for (let secondsAgo = visibleSeconds; secondsAgo > 0; secondsAgo--) {
+        samples.push({
+          time: startedAt - secondsAgo * sampleEveryMs,
+          value: nextStressValue(visibleSeconds - secondsAgo)
+        });
+      }
+
+      function nextStressValue(secondsPassed) {
+        // At the far left the level is quiet, then it eases up into the usual
+        // middle range. After that, changes last for different amounts of time.
+        if (secondsPassed < 95) {
+          targetLevel = 7 + Math.random() * 8;
+          currentLevel += (targetLevel - currentLevel) * 0.3;
+          return Math.round(Math.max(5, Math.min(15, currentLevel)));
+        }
+
+        if (secondsPassed < 165) {
+          targetLevel = 14 + ((secondsPassed - 95) / 70) * 45;
+          currentLevel += (targetLevel - currentLevel) * 0.13 + (Math.random() * 2 - 1);
+          return Math.round(Math.max(5, Math.min(100, currentLevel)));
+        }
+
+        if (secondsToNextChange <= 0) {
+          const chance = Math.random();
+
+          if (chance < 0.12) {
+            targetLevel = 86 + Math.random() * 13;
+            changeKind = "spike";
+          } else if (chance < 0.28) {
+            targetLevel = 28 + Math.random() * 22;
+            changeKind = "drop";
+          } else if (chance < 0.72) {
+            targetLevel = 55 + Math.random() * 12;
+            changeKind = "settled";
+          } else {
+            targetLevel = 40 + Math.random() * 38;
+            changeKind = "drift";
+          }
+
+          secondsToNextChange = 7 + Math.floor(Math.random() * 24);
+        }
+
+        secondsToNextChange--;
+        const speed = changeKind === "spike" ? 0.24 : 0.1 + Math.random() * 0.06;
+        const wobble = Math.random() * 3.6 - 1.8;
+        currentLevel += (targetLevel - currentLevel) * speed + wobble;
+        currentLevel = Math.max(5, Math.min(100, currentLevel));
+        return Math.round(currentLevel);
+      }
+
+      function formatTime(time) {
+        return new Date(time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+
+      function formatDateTime(time) {
+        return new Date(time).toLocaleString([], {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+
+      function formatAxisDate(time) {
+        return new Date(time).toLocaleDateString([], {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+      }
+
+      function liveChartMargin(width) {
+        return width < 600
+          ? { top: 25, right: 10, bottom: 72, left: 42 }
+          : { top: 25, right: 24, bottom: 72, left: 58 };
+      }
+
+      function resizeCanvasesForLayout() {
+        const liveWidth = Math.round(canvas.getBoundingClientRect().width);
+        const monthWidth = Math.round(monthCanvas.getBoundingClientRect().width);
+
+        if (liveWidth > 0) {
+          const width = Math.min(850, liveWidth);
+          canvas.width = width;
+          canvas.height = width < 600 ? 470 : 430;
+        }
+
+        if (monthWidth > 0) {
+          const width = Math.min(850, monthWidth);
+          monthCanvas.width = width;
+          monthCanvas.height = width < 600 ? 440 : 380;
+        }
+      }
+
+      function daysInMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      }
+
+      function makeMonthlySamples(date) {
+        const daysSoFar = date.getDate();
+        let level = 44 + Math.random() * 18;
+        let target = level;
+        const madeUpDays = [];
+
+        for (let day = 1; day <= daysSoFar; day++) {
+          const chance = Math.random();
+
+          if (chance < 0.1) {
+            target = 82 + Math.random() * 16;
+          } else if (chance < 0.24) {
+            target = 25 + Math.random() * 23;
+          } else if (chance < 0.7) {
+            target = 55 + Math.random() * 13;
+          } else {
+            target = 38 + Math.random() * 38;
+          }
+
+          level += (target - level) * (0.25 + Math.random() * 0.23);
+          level += Math.random() * 8 - 4;
+          level = Math.max(5, Math.min(100, level));
+          madeUpDays.push({ day: day, value: Math.round(level) });
+        }
+
+        return madeUpDays;
+      }
+
+      function ensureMonthlySamples(date) {
+        const nextMonthKey = date.getFullYear() + "-" + date.getMonth();
+
+        if (nextMonthKey !== monthKey) {
+          monthKey = nextMonthKey;
+          monthlySamples = makeMonthlySamples(date);
+        }
+      }
+
+      function drawMonthlyChart(now, latestValue) {
+        ensureMonthlySamples(now);
+
+        const today = monthlySamples[monthlySamples.length - 1];
+        if (today) {
+          today.value = Math.round(today.value * 0.96 + latestValue * 0.04);
+        }
+
+        const width = monthCanvas.width;
+        const height = monthCanvas.height;
+        const compact = width < 600;
+        const margin = compact
+          ? { top: 25, right: 10, bottom: 58, left: 42 }
+          : { top: 25, right: 24, bottom: 58, left: 58 };
+        const graphWidth = width - margin.left - margin.right;
+        const graphHeight = height - margin.top - margin.bottom;
+        const numberOfDays = daysInMonth(now);
+
+        monthContext.clearRect(0, 0, width, height);
+        monthContext.fillStyle = "#000";
+        monthContext.font = compact ? "15px serif" : "16px serif";
+        monthContext.textAlign = "left";
+        monthContext.textBaseline = "alphabetic";
+        monthContext.fillText("Daily stress level (%)", margin.left, 17);
+
+        monthContext.strokeStyle = "#d0d0d0";
+        monthContext.fillStyle = "#000";
+        monthContext.font = compact ? "11px serif" : "13px serif";
+        monthContext.textAlign = "right";
+        monthContext.textBaseline = "middle";
+        for (let percentage = 0; percentage <= 100; percentage += 20) {
+          const y = margin.top + graphHeight - (percentage / 100) * graphHeight;
+          monthContext.beginPath();
+          monthContext.moveTo(margin.left, y);
+          monthContext.lineTo(width - margin.right, y);
+          monthContext.stroke();
+          monthContext.fillText(percentage + "%", margin.left - 8, y);
+        }
+
+        monthContext.strokeStyle = "#000";
+        monthContext.lineWidth = 1;
+        monthContext.beginPath();
+        monthContext.moveTo(margin.left, margin.top);
+        monthContext.lineTo(margin.left, margin.top + graphHeight);
+        monthContext.lineTo(width - margin.right, margin.top + graphHeight);
+        monthContext.stroke();
+
+        monthContext.textAlign = "center";
+        monthContext.textBaseline = "top";
+        const dayStep = compact ? 14 : 7;
+        for (let day = 1; day <= numberOfDays; day += dayStep) {
+          const x = margin.left + ((day - 1) / (numberOfDays - 1)) * graphWidth;
+          monthContext.beginPath();
+          monthContext.moveTo(x, margin.top + graphHeight);
+          monthContext.lineTo(x, margin.top + graphHeight + 5);
+          monthContext.stroke();
+          monthContext.fillText(day, x, margin.top + graphHeight + 10);
+        }
+
+        const lastDayX = width - margin.right;
+        monthContext.beginPath();
+        monthContext.moveTo(lastDayX, margin.top + graphHeight);
+        monthContext.lineTo(lastDayX, margin.top + graphHeight + 5);
+        monthContext.stroke();
+        monthContext.fillText(numberOfDays, lastDayX, margin.top + graphHeight + 10);
+
+        monthContext.font = compact ? "11px serif" : "13px serif";
+        monthContext.save();
+        monthContext.translate(16, margin.top + graphHeight / 2);
+        monthContext.rotate(-Math.PI / 2);
+        monthContext.textAlign = "center";
+        monthContext.textBaseline = "middle";
+        monthContext.fillText("Percentage", 0, 0);
+        monthContext.restore();
+        monthContext.textAlign = "center";
+        monthContext.textBaseline = "alphabetic";
+        monthContext.fillText("Day of month", margin.left + graphWidth / 2, height - 7);
+
+        monthContext.strokeStyle = "#000080";
+        monthContext.lineWidth = 2;
+        monthContext.beginPath();
+        monthlySamples.forEach(function (sample, index) {
+          const x = margin.left + ((sample.day - 1) / (numberOfDays - 1)) * graphWidth;
+          const y = margin.top + graphHeight - (sample.value / 100) * graphHeight;
+          if (index === 0) {
+            monthContext.moveTo(x, y);
+          } else {
+            monthContext.lineTo(x, y);
+          }
+        });
+        monthContext.stroke();
+
+        if (today) {
+          const todayX = margin.left + ((today.day - 1) / (numberOfDays - 1)) * graphWidth;
+          const todayY = margin.top + graphHeight - (today.value / 100) * graphHeight;
+          monthContext.fillStyle = "#000080";
+          monthContext.beginPath();
+          monthContext.arc(todayX, todayY, 4, 0, Math.PI * 2);
+          monthContext.fill();
+        }
+
+        monthReading.textContent = now.toLocaleDateString([], {
+          month: "long",
+          year: "numeric"
+        }) + ": daily stress levels. It starts a new graph next month.";
+      }
+
+      function drawChart() {
+        const width = canvas.width;
+        const height = canvas.height;
+        const compact = width < 600;
+        const margin = liveChartMargin(width);
+        const graphWidth = width - margin.left - margin.right;
+        const graphHeight = height - margin.top - margin.bottom;
+        const now = samples[samples.length - 1].time;
+        const oldest = now - visibleSeconds * sampleEveryMs;
+
+        context.clearRect(0, 0, width, height);
+        context.fillStyle = "#000";
+        context.font = compact ? "15px serif" : "16px serif";
+        context.textAlign = "left";
+        context.textBaseline = "alphabetic";
+        context.fillText("Stress level (%)", margin.left, 17);
+
+        context.strokeStyle = "#d0d0d0";
+        context.fillStyle = "#000";
+        context.font = compact ? "11px serif" : "13px serif";
+        context.textAlign = "right";
+        context.textBaseline = "middle";
+        for (let percentage = 0; percentage <= 100; percentage += 10) {
+          const y = margin.top + graphHeight - (percentage / 100) * graphHeight;
+          context.beginPath();
+          context.moveTo(margin.left, y);
+          context.lineTo(width - margin.right, y);
+          context.stroke();
+          context.fillText(percentage + "%", margin.left - 8, y);
+        }
+
+        context.strokeStyle = "#000";
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(margin.left, margin.top);
+        context.lineTo(margin.left, margin.top + graphHeight);
+        context.lineTo(width - margin.right, margin.top + graphHeight);
+        context.stroke();
+
+        context.textAlign = "center";
+        context.textBaseline = "top";
+        context.font = compact ? "10px serif" : "11px serif";
+        const tickCount = compact ? 2 : 5;
+        for (let tick = 0; tick <= tickCount; tick++) {
+          const position = tick / tickCount;
+          const x = margin.left + position * graphWidth;
+          const labelTime = oldest + position * visibleSeconds * sampleEveryMs;
+          context.beginPath();
+          context.moveTo(x, margin.top + graphHeight);
+          context.lineTo(x, margin.top + graphHeight + 5);
+          context.stroke();
+          context.fillText(formatAxisDate(labelTime), x, margin.top + graphHeight + 9);
+          context.fillText(formatTime(labelTime), x, margin.top + graphHeight + 22);
+        }
+
+        context.font = compact ? "11px serif" : "13px serif";
+        context.save();
+        context.translate(16, margin.top + graphHeight / 2);
+        context.rotate(-Math.PI / 2);
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("Percentage", 0, 0);
+        context.restore();
+        context.textAlign = "center";
+        context.textBaseline = "alphabetic";
+        context.fillText("Date and time (live)", margin.left + graphWidth / 2, height - 7);
+
+        context.strokeStyle = "#c00000";
+        context.lineWidth = 2;
+        context.beginPath();
+        samples.forEach(function (sample, index) {
+          const x = margin.left + ((sample.time - oldest) / (visibleSeconds * sampleEveryMs)) * graphWidth;
+          const y = margin.top + graphHeight - (sample.value / 100) * graphHeight;
+          if (index === 0) {
+            context.moveTo(x, y);
+          } else {
+            context.lineTo(x, y);
+          }
+        });
+        context.stroke();
+
+        const latest = samples[samples.length - 1];
+        const latestX = margin.left + graphWidth;
+        const latestY = margin.top + graphHeight - (latest.value / 100) * graphHeight;
+        context.fillStyle = "#c00000";
+        context.beginPath();
+        context.arc(latestX, latestY, 4, 0, Math.PI * 2);
+        context.fill();
+        reading.textContent = latest.value + "% at " + formatDateTime(latest.time);
+        stressAlert.hidden = latest.value <= 80;
+      }
+
+      function showPointDetails(event) {
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const margin = liveChartMargin(canvas.width);
+        const graphLeft = margin.left;
+        const graphRight = canvas.width - margin.right;
+
+        if (canvasX < graphLeft || canvasX > graphRight) {
+          return;
+        }
+
+        const pointPosition = (canvasX - graphLeft) / (graphRight - graphLeft);
+        const pointIndex = Math.round(pointPosition * (samples.length - 1));
+        const sample = samples[pointIndex];
+        pointDetails.textContent = "Selected point: " + sample.value + "% at " + formatDateTime(sample.time);
+      }
+
+      function addReading() {
+        const time = Date.now();
+        const secondsPassed = Math.floor((time - startedAt) / sampleEveryMs);
+        const value = nextStressValue(visibleSeconds + secondsPassed);
+        samples.push({ time: time, value: value });
+        while (samples.length > visibleSeconds + 1) {
+          samples.shift();
+        }
+        drawChart();
+        drawMonthlyChart(new Date(time), value);
+      }
+
+      resizeCanvasesForLayout();
+      drawChart();
+      drawMonthlyChart(new Date(), samples[samples.length - 1].value);
+      window.setInterval(addReading, sampleEveryMs);
+      canvas.addEventListener("pointermove", showPointDetails);
+      canvas.addEventListener("pointerleave", function () {
+        pointDetails.textContent = "Move over the live graph to see a point's exact date, time, and level.";
+      });
+      if (window.addEventListener) {
+        window.addEventListener("resize", function () {
+          resizeCanvasesForLayout();
+          drawChart();
+          drawMonthlyChart(new Date(), samples[samples.length - 1].value);
+        });
+      }
+    }());
+  </script>
+</body>
+</html>

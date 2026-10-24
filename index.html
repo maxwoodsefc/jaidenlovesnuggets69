@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.png">
+  <title>jaidenlovesnuggets69</title>
+  <style>
+    body {
+      margin: 0;
+      text-align: center;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+    }
+
+    .title-row {
+      display: inline-flex;
+      position: relative;
+      align-items: center;
+      margin: 0 0 24px;
+    }
+
+    .title-row h1 {
+      margin: 0;
+    }
+
+    .title-heart {
+      position: absolute;
+      right: calc(100% + 10px);
+      top: 50%;
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      transform: translateY(-50%);
+    }
+
+    #site-title {
+      cursor: pointer;
+    }
+
+    #site-title:focus-visible {
+      outline: 2px solid #000;
+      outline-offset: 4px;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+    }
+
+    .frame {
+      position: relative;
+      width: min(90vw, 613px);
+      margin: 0 auto;
+    }
+
+    .top-links {
+      margin: -12px 0 24px;
+      padding: 5px 0;
+      line-height: 1.5;
+      border-top: 1px solid #999;
+      border-bottom: 1px solid #999;
+    }
+
+    .portrait {
+      position: absolute;
+      z-index: 1;
+      top: 8%;
+      left: 10%;
+      width: 80%;
+      height: 84%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .border-art {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+
+    .reaction {
+      width: min(94vw, 500px);
+      margin: 18px auto 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .welcome-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 64px;
+      margin: 0 0 24px min(9vw, 124px);
+    }
+
+    .welcome-cat {
+      width: min(48vw, 500px);
+      height: auto;
+    }
+
+    .welcome-bubble {
+      position: relative;
+      box-sizing: border-box;
+      width: min(32vw, 340px);
+      padding: 12px;
+      border: 2px solid black;
+      border-radius: 16px;
+      background: white;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .welcome-bubble::before,
+    .welcome-bubble::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      transform: translateY(-50%);
+    }
+
+    .welcome-bubble::before {
+      left: -18px;
+      border-right: 18px solid black;
+    }
+
+    .welcome-bubble::after {
+      z-index: 1;
+      left: -14px;
+      border-right: 15px solid white;
+    }
+
+    @media (max-width: 600px) {
+      .welcome-row {
+        gap: 12px;
+        margin-left: 0;
+      }
+
+      .welcome-cat {
+        width: 43vw;
+      }
+
+      .welcome-bubble {
+        width: 43vw;
+      }
+    }
+
+    .bubble {
+      position: relative;
+      box-sizing: border-box;
+      width: min(300px, 80vw);
+      padding: 12px 16px;
+      border: 2px solid black;
+      border-radius: 16px;
+      background: white;
+      text-align: center;
+    }
+
+    .bubble::before,
+    .bubble::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+    }
+
+    .bubble::before {
+      bottom: -18px;
+      border-top: 18px solid black;
+    }
+
+    .bubble::after {
+      bottom: -15px;
+      border-top: 16px solid white;
+    }
+
+    .emoji {
+      display: block;
+      width: min(35vw, 140px);
+      height: auto;
+    }
+
+    .emoji-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 72px;
+    }
+
+    .thumb-up-wrap {
+      position: relative;
+    }
+
+    .thumb-bubble {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      box-sizing: border-box;
+      width: 128px;
+      padding: 8px 10px;
+      border: 2px solid black;
+      border-radius: 14px;
+      background: white;
+      transform: translateX(-50%);
+    }
+
+    .thumb-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      border-top: 14px solid black;
+      border-right: 11px solid transparent;
+      border-left: 11px solid transparent;
+      transform: translateX(-50%);
+    }
+
+    .thumb-bubble::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      bottom: -11px;
+      left: 50%;
+      border-top: 12px solid white;
+      border-right: 9px solid transparent;
+      border-left: 9px solid transparent;
+      transform: translateX(-50%);
+    }
+
+  </style>
+</head>
+<body>
+  <main>
+    <div class="title-row">
+      <img class="title-heart" src="makesweet-zb5l1w.gif" alt="">
+      <h1 id="site-title" role="button" tabindex="0" aria-label="Click ten times to play a sound"><u>jaidenlovesnuggets69</u></h1>
+    </div>
+    <nav class="top-links" aria-label="Featured links">
+      <a href="spungerbobboxers.html">spongebob boxies</a> |
+      <a href="stresslevel.html">stress level graph</a> |
+      <a href="eggygrave.html">pay respects to eggy</a> |
+      <a href="gamelinks.html">game links</a> |
+      <a href="the.html">the</a> |
+      <a href="hotdogman.html">hotdog man</a>
+    </nav>
+    <div class="welcome-row">
+      <img class="welcome-cat" src="yes-cat-thumbs-up.png" alt="A cat giving a thumbs-up">
+      <div class="welcome-bubble">welcome to<br>jaidenlovesnuggets.online :)</div>
+    </div>
+    <h2>Dripped out pearl</h2>
+
+    <div class="frame">
+      <img
+        class="portrait"
+        src="images (4).jpg"
+        alt="A man wearing a gold suit"
+        onclick="playSound()"
+      >
+      <img class="border-art" src="golden-border-gold-border-frame-transparent-clip-art-image-gallery-35.png" alt="">
+    </div>
+
+    <div class="reaction">
+      <div class="emoji-row">
+        <div class="thumb-up-wrap">
+          <div class="thumb-bubble">for ya.<br>- tp</div>
+          <img
+            class="emoji"
+            src="istockphoto-157030584-612x612.jpg"
+            alt="A thumbs-up emoji"
+          >
+        </div>
+      </div>
+    </div>
+
+    <audio id="pearl-sound" src="hi-my-name-is-tom-pearl.mp3"></audio>
+    <audio id="adios-sound" src="adios-turd-nuggets.mp3" preload="auto"></audio>
+  </main>
+
+  <script>
+    function playSound() {
+      const sound = document.getElementById("pearl-sound");
+      sound.currentTime = 0;
+      sound.play();
+    }
+
+    const siteTitle = document.getElementById("site-title");
+    const adiosSound = document.getElementById("adios-sound");
+    let titleClicks = 0;
+
+    function countTitleClick() {
+      titleClicks += 1;
+
+      if (titleClicks === 10) {
+        adiosSound.currentTime = 0;
+        adiosSound.play().catch(function () {});
+        titleClicks = 0;
+      }
+    }
+
+    siteTitle.addEventListener("click", countTitleClick);
+    siteTitle.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        countTitleClick();
+      }
+    });
+  </script>
+</body>
+</html>

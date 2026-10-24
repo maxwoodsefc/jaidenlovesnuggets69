@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon2.png">
+  <title>R.I.P. EGGY</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    main {
+      box-sizing: border-box;
+      width: min(100%, 700px);
+      margin: 0 auto;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .scene,
+    .scene img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .gallery {
+      margin-top: 28px;
+    }
+
+    .gallery img {
+      display: block;
+      width: min(100%, 450px);
+      height: 320px;
+      margin: 0 auto 12px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>R.I.P. EGGY FOREVER MISSED</h1>
+
+    <div class="scene">
+      <img
+        src="360_F_1211820258_sQTRJjPyEhj0oWvJqT201HHqD6vSNbeE.jpg"
+        alt="A gravestone on a grassy hill"
+      >
+    </div>
+
+    <p>June 2026</p>
+
+    <section class="gallery">
+      <h2>Eggy</h2>
+      <img id="eggy-photo" src="eggy1.jpg" alt="Photo 1 of Eggy">
+      <button type="button" onclick="changePhoto(-1)">Previous</button>
+      <button type="button" onclick="changePhoto(1)">Next</button>
+    </section>
+
+    <p><a href="index.html">Back to the main page</a></p>
+  </main>
+
+  <script>
+    const photos = ["eggy1.jpg", "eggy2.jpg", "eggy3.jpg"];
+    let currentPhoto = 0;
+
+    function changePhoto(direction) {
+      currentPhoto =
+        (currentPhoto + direction + photos.length) % photos.length;
+
+      const image = document.getElementById("eggy-photo");
+      image.src = photos[currentPhoto];
+      image.alt = `Photo ${currentPhoto + 1} of Eggy`;
+    }
+  </script>
+</body>
+</html>

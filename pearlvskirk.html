@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loading game…</title>
+</head>
+<body>
+  <script src="pearlvskirk.chunk01.txt"></script>
+  <script src="pearlvskirk.chunk02.txt"></script>
+  <script src="pearlvskirk.chunk03.txt"></script>
+  <script src="pearlvskirk.chunk04.txt"></script>
+  <script>
+    (function () {
+      const encodedParts = window.__gameParts || [];
+      const byteParts = encodedParts.map(function (encoded) {
+        const text = atob(encoded);
+        const bytes = new Uint8Array(text.length);
+        for (let index = 0; index < text.length; index += 1) {
+          bytes[index] = text.charCodeAt(index);
+        }
+        return bytes;
+      });
+      const totalLength = byteParts.reduce(function (total, bytes) { return total + bytes.length; }, 0);
+      const allBytes = new Uint8Array(totalLength);
+      let offset = 0;
+      byteParts.forEach(function (bytes) {
+        allBytes.set(bytes, offset);
+        offset += bytes.length;
+      });
+      const gameHtml = new TextDecoder("utf-8").decode(allBytes);
+      window.__gameParts = [];
+      document.open();
+      document.write(gameHtml);
+      document.close();
+    }());
+  </script>
+</body>
+</html>

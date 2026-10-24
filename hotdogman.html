@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hotdog man</title>
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: white;
+    }
+
+    #surprise {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      display: none;
+      max-width: 88vw;
+      max-height: 88vh;
+      object-fit: contain;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    #surprise.shown {
+      display: block;
+    }
+
+  </style>
+</head>
+<body>
+  <img id="surprise" alt="">
+
+  <script>
+    const hotdogMan = "Images_-_2026-02-11T165817.759.webp";
+    const funnyImages = [
+      "whats-the-most-cursed-image-of-mr-krabs-you-have-on-your-v0-an8falv29xpe1.webp",
+      "cursed-images-6-10-1-2023.webp",
+      "0d8539faec7891ddd0dbfaceaacb9644.jpg",
+      "3cd03280c1b0bf64db39826c2b616f42.jpg",
+      "6a7d8abbf275b_cursed-funny-images__700.jpg",
+      "248bf4d54acd529b793e420b6a4130b7.jpg",
+      "artworks-JHQyIhCat5yfkMZh-UTs8XQ-t500x500.jpg",
+      "bbedd35b3f7fc662eb3fb79835fb36f0.jpg",
+      "Cursed-Minecraft-chicken-meme-1.jpg",
+      "d705e2d2b13ad27176762aa16f61faf1.jpg",
+      "fd7ad01cff92c3c2ad5ad06c8986953e.jpg",
+      "gimme-your-best-cursed-images-v0-j3no0qdqztod1.webp",
+      "images (1).jpg",
+      "images (2).jpg",
+      "images (3).jpg",
+      "images.jpg",
+      "weird-products-2-20250128.webp",
+      "104076383-a-hand-pointing-towards-the-camera-wearing-ashirt-and-tie.jpg",
+      "images (5).jpg",
+      "_99084617_f8824ea6-0661-432f-9c65-6ffccc47cdab.png",
+      "Chinface.jpg",
+      "cursed-food-memes-2-5-1-2024.webp",
+      "funny-anytime-mum-calls-meme_23-2149093840.jpg",
+      "images (6).jpg",
+      "images (7).jpg",
+      "images (8).jpg",
+      "images (9).jpg"
+    ];
+
+    const surprise = document.getElementById("surprise");
+    let imageQueue = [];
+
+    function randomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(images) {
+      const shuffled = images.slice();
+
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const replacement = randomNumber(0, index);
+        const savedImage = shuffled[index];
+        shuffled[index] = shuffled[replacement];
+        shuffled[replacement] = savedImage;
+      }
+
+      return shuffled;
+    }
+
+    function takeNextImage() {
+      if (imageQueue.length === 0) {
+        imageQueue = [hotdogMan].concat(shuffle(funnyImages));
+      }
+
+      return imageQueue.shift();
+    }
+
+    function showImage(image) {
+      surprise.src = image;
+      surprise.style.left = randomNumber(25, 75) + "%";
+      surprise.style.top = randomNumber(25, 75) + "%";
+      surprise.style.maxWidth = randomNumber(42, 82) + "vw";
+      surprise.style.maxHeight = randomNumber(55, 88) + "vh";
+      surprise.className = "shown";
+    }
+
+    function hideImage() {
+      surprise.className = "";
+    }
+
+    function nextBlankGap() {
+      return Math.random() < 0.3
+        ? randomNumber(4200, 7000)
+        : randomNumber(350, 2500);
+    }
+
+    function showNextImage(blankTime) {
+      hideImage();
+      window.setTimeout(function () {
+        const image = takeNextImage();
+        showImage(image);
+
+        window.setTimeout(function () {
+          hideImage();
+          showNextImage(nextBlankGap());
+        }, randomNumber(450, 1400));
+      }, blankTime);
+    }
+
+    funnyImages.concat(hotdogMan).forEach(function (image) {
+      const preload = new Image();
+      preload.src = image;
+    });
+
+    showNextImage(3000);
+  </script>
+</body>
+</html>
